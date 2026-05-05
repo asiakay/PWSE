@@ -71,11 +71,12 @@
     <main class="max-w-6xl mx-auto px-4 -mt-12">
 
         <!-- Scenarios -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
             <button onclick="loadScenario('climate')" class="bg-white hover:bg-indigo-50 p-3 rounded-xl border border-slate-200 text-sm font-bold transition-all shadow-sm">🌍 Climate Action</button>
             <button onclick="loadScenario('housing')" class="bg-white hover:bg-indigo-50 p-3 rounded-xl border border-slate-200 text-sm font-bold transition-all shadow-sm">🏠 Housing Crisis</button>
             <button onclick="loadScenario('labor')" class="bg-white hover:bg-indigo-50 p-3 rounded-xl border border-slate-200 text-sm font-bold transition-all shadow-sm">✊ Labor Rights</button>
             <button onclick="loadScenario('tech')" class="bg-white hover:bg-indigo-50 p-3 rounded-xl border border-slate-200 text-sm font-bold transition-all shadow-sm">🤖 AI Regulation</button>
+            <button onclick="loadScenario('wealth')" class="bg-white hover:bg-indigo-50 p-3 rounded-xl border border-slate-200 text-sm font-bold transition-all shadow-sm">💰 Racial Wealth Gap</button>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -224,6 +225,7 @@
             housing: { visibility: 7, constituency: 6, cost: 4, opposition: 7, frames: 5, label: "Housing Crisis" },
             labor:   { visibility: 5, constituency: 8, cost: 6, opposition: 9, frames: 6, label: "Labor Rights" },
             tech:    { visibility: 2, constituency: 9, cost: 3, opposition: 6, frames: 9, label: "AI Regulation" },
+            wealth:  { visibility: 4, constituency: 8, cost: 3, opposition: 9, frames: 10, label: "Racial Wealth Gap" },
         };
 
         function unlock() {
