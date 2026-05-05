@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Political Will Strategy Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style
+        .slider-thumb::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #4f46e5;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .bg-gradient-header {
+            background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen font-sans text-slate-900 pb-20">
+    <!-- Header -->
+    <header class="bg-gradient-header pt-12 pb-20 px-4 text-center text-white">
+        <h1 class="text-4xl md:text-5xl font-black mb-4 tracking-tight">Political Will Strategy Engine</h1>
+        <p class="text-indigo-100 text-lg max-w-2xl mx-auto opacity-90 leading-relaxed">
+            A diagnostic tool for policy advocates and community organizers to identify leverage points in complex systems.
+        </p>
+        <div class="mt-6 inline-block bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 text-sm font-mono">
+            P.W. = (V × S × C) / (O × F)
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 -mt-12">
+        <!-- Scenario Presets -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+            <button onclick="loadScenario('climate')" class="bg-white hover:bg-indigo-50 p-3 rounded-xl border border-slate-200 text-sm font-bold transition-all shadow-sm">🌍 Climate Action</button>
+            <button onclick="loadScenario('housing')" class="bg-white hover:bg-indigo-50 p-3 rounded-xl border border-slate-200 text-sm font-bold transition-all shadow-sm">🏠 Housing Crisis</button>
+            <button onclick="loadScenario('labor')" class="bg-white hover:bg-indigo-50 p-3 rounded-xl border border-slate-200 text-sm font-bold transition-all shadow-sm">✊ Labor Rights</button>
+            <button onclick="loadScenario('tech')" class="bg-white hover:bg-indigo-50 p-3 rounded-xl border border-slate-200 text-sm font-bold transition-all shadow-sm">🤖 AI Regulation</button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Control Panel -->
+            <div class="lg:col-span-7 space-y-6">
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 card-shadow">
+                    <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <span class="w-2 h-6 bg-indigo-600 rounded-full"></span>
+                        The Drivers (Numerator)
+                    </h2>
+                    
+                    <div class="space-y-8">
+                        <div>
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="font-bold text-slate-700">Visibility of Harm <span class="text-slate-400 font-normal text-xs ml-2">(How visceral is the crisis?)</span></label>
+                                <span id="v-val" class="text-2xl font-black text-indigo-600">5</span>
+                            </div>
+                            <input type="range" id="visibility" min="1" max="10" step="0.1" value="5" class="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer slider-thumb">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="font-bold text-slate-700">Size of Affected Constituency <span class="text-slate-400 font-normal text-xs ml-2">(How many people are hurt?)</span></label>
+                                <span id="s-val" class="text-2xl font-black text-indigo-600">5</span>
+                            </div>
+                            <input type="range" id="constituency" min="1" max="10" step="0.1" value="5" class="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer slider-thumb">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="font-bold text-slate-700">Cost of Inaction <span class="text-slate-400 font-normal text-xs ml-2">(Electoral/Economic risk to leaders)</span></label>
+                                <span id="c-val" class="text-2xl font-black text-indigo-600">5</span>
+                            </div>
+                            <input type="range" id="cost" min="1" max="10" step="0.1" value="5" class="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer slider-thumb">
+                        </div>
+                    </div>
+
+                    <h2 class="text-xl font-bold mt-12 mb-6 flex items-center gap-2">
+                        <span class="w-2 h-6 bg-rose-500 rounded-full"></span>
+                        The Resistors (Denominator)
+                    </h2>
+                    
+                    <div class="space-y-8">
+                        <div>
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="font-bold text-slate-700">Organized Opposition Power <span class="text-slate-400 font-normal text-xs ml-2">(Lobbying strength)</span></label>
+                                <span id="o-val" class="text-2xl font-black text-rose-600">5</span>
+                            </div>
+                            <input type="range" id="opposition" min="1" max="10" step="0.1" value="5" class="w-full h-3 bg-rose-100 rounded-lg appearance-none cursor-pointer slider-thumb">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="font-bold text-slate-700">Availability of Alternative Frames <span class="text-slate-400 font-normal text-xs ml-2">(Distraction narratives)</span></label>
+                                <span id="f-val" class="text-2xl font-black text-rose-600">5</span>
+                            </div>
+                            <input type="range" id="frames" min="1" max="10" step="0.1" value="5" class="w-full h-3 bg-rose-100 rounded-lg appearance-none cursor-pointer slider-thumb">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard -->
+            <div class="lg:col-span-5 space-y-6">
+                <!-- Result Card -->
+                <div class="bg-white p-8 rounded-2xl border border-slate-200 card-shadow text-center">
+                    <h3 class="text-xs font-black tracking-widest text-slate-400 uppercase mb-4">Total Political Will</h3>
+                    <div id="score-display" class="text-8xl font-black text-indigo-700 tabular-nums">5.0</div>
+                    <div id="status-badge" class="mt-4 inline-block px-4 py-1 rounded-full text-sm font-bold uppercase tracking-wider">Loading...</div>
+                    
+                    <div class="mt-8 grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            <div class="text-xs text-slate-500 font-bold uppercase">Momentum</div>
+                            <div id="momentum-val" class="text-xl font-bold">Medium</div>
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            <div class="text-xs text-slate-500 font-bold uppercase">Complexity</div>
+                            <div id="complexity-val" class="text-xl font-bold">High</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strategic Tactics -->
+                <div class="bg-indigo-900 p-6 rounded-2xl text-white card-shadow">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-300" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1a1 1 0 112 0v1a1 1 0 11-2 0zM13.536 14.95a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zM16.464 13.536a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 0zM3.536 14.95a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 0z"></path></svg>
+                        Strategic Priority
+                    </h3>
+                    <div id="strategy-recommendation" class="space-y-4">
+                        <!-- Dynamic Recs -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Educational Footer -->
+        <div class="mt-12 p-8 bg-slate-800 rounded-2xl text-slate-300 grid md:grid-cols-2 gap-8">
+            <div>
+                <h4 class="text-white font-bold mb-2">How to use this model</h4>
+                <p class="text-sm leading-relaxed">
+                    Identify the "choke point" in your policy goal. If your score is low, look at the denominator. Often, activists spend too much energy on the numerator (shouting louder) when the real friction is in the <strong>Alternative Frames</strong> (the narratives being used to excuse inaction).
+                </p>
+            </div>
+            <div>
+                <h4 class="text-white font-bold mb-2">The "Denominator" Trap</h4>
+                <p class="text-sm leading-relaxed">
+                    The denominator has an exponential impact. Reducing <strong>Opposition Power</strong> from 10 to 5 is mathematically identical to doubling your entire numerator. Sometimes the best strategy is to peel away the opposition's allies rather than adding more of your own.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const inputs = ['visibility', 'constituency', 'cost', 'opposition', 'frames'];
+        const elements = {};
+        inputs.forEach(id => {
+            elements[id] = document.getElementById(id);
+            elements[`${id.charAt(0)}-val`] = document.getElementById(`${id.charAt(0)}-val`);
+        });
+
+        const scoreDisplay = document.getElementById('score-display');
+        const statusBadge = document.getElementById('status-badge');
+        const momentumVal = document.getElementById('momentum-val');
+        const complexityVal = document.getElementById('complexity-val');
+        const strategyContainer = document.getElementById('strategy-recommendation');
+
+        const scenarios = {
+            climate: { visibility: 3, constituency: 10, cost: 2, opposition: 9, frames: 8 },
+            housing: { visibility: 7, constituency: 6, cost: 4, opposition: 7, frames: 5 },
+            labor: { visibility: 5, constituency: 8, cost: 6, opposition: 9, frames: 6 },
+            tech: { visibility: 2, constituency: 9, cost: 3, opposition: 6, frames: 9 }
+        };
+
+        function loadScenario(type) {
+            const s = scenarios[type];
+            for (let key in s) {
+                elements[key].value = s[key];
+            }
+            update();
+        }
+
+        function update() {
+            const v = parseFloat(elements.visibility.value);
+            const s = parseFloat(elements.constituency.value);
+            const c = parseFloat(elements.cost.value);
+            const o = parseFloat(elements.opposition.value);
+            const f = parseFloat(elements.frames.value);
+
+            // Update UI labels
+            elements['v-val'].innerText = v.toFixed(1);
+            elements['s-val'].innerText = s.toFixed(1);
+            elements['c-val'].innerText = c.toFixed(1);
+            elements['o-val'].innerText = o.toFixed(1);
+            elements['f-val'].innerText = f.toFixed(1);
+
+            // Calculate Score
+            const denominator = (o * f) + 0.001;
+            const score = (v * s * c) / denominator;
+            
+            // Display Logic
+            scoreDisplay.innerText = score.toFixed(1);
+            
+            // Badge & Status
+            if (score < 1) {
+                statusBadge.innerText = "Stalled";
+                statusBadge.className = "mt-4 inline-block px-4 py-1 rounded-full text-sm font-bold uppercase tracking-wider bg-rose-100 text-rose-700";
+                momentumVal.innerText = "Low";
+            } else if (score < 5) {
+                statusBadge.innerText = "Growing";
+                statusBadge.className = "mt-4 inline-block px-4 py-1 rounded-full text-sm font-bold uppercase tracking-wider bg-orange-100 text-orange-700";
+                momentumVal.innerText = "Moderate";
+            } else {
+                statusBadge.innerText = "Tipping Point";
+                statusBadge.className = "mt-4 inline-block px-4 py-1 rounded-full text-sm font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700";
+                momentumVal.innerText = "Extreme";
+            }
+
+            complexityVal.innerText = (o > 7 || f > 7) ? "Very High" : "Standard";
+
+            // Strategy Generation
+            let strategy = "";
+            if (o >= 8 && f >= 7) {
+                strategy = `
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10">
+                        <div class="font-bold mb-1">Target: The Denominator</div>
+                        <div class="text-xs opacity-80">Opposition is currently the bottleneck. Focus on "Frame Killing"—publicly debunking the alt-narratives to weaken their political cover.</div>
+                    </div>
+                `;
+            } else if (v <= 4) {
+                strategy = `
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10">
+                        <div class="font-bold mb-1">Target: The Numerator</div>
+                        <div class="text-xs opacity-80">The harm is too abstract. Focus on investigative storytelling or visual direct action to force the issue into the public eye.</div>
+                    </div>
+                `;
+            } else if (c <= 5) {
+                strategy = `
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10">
+                        <div class="font-bold mb-1">Target: Escalation</div>
+                        <div class="text-xs opacity-80">The public cares, but leaders feel safe. You need to increase the "Cost of Inaction"—this means primary challenges or economic boycotts.</div>
+                    </div>
+                `;
+            } else {
+                strategy = `
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10">
+                        <div class="font-bold mb-1">Target: Momentum</div>
+                        <div class="text-xs opacity-80">The system is ready. Focus on coordination. Bring your constituency together to provide the final "push" for legislation.</div>
+                    </div>
+                `;
+            }
+            strategyContainer.innerHTML = strategy;
+        }
+
+        inputs.forEach(id => {
+            elements[id].addEventListener('input', update);
+        });
+
+        // Initialize
+        update();
+    </script>
+</body>
+</html>
