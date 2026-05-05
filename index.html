@@ -70,6 +70,18 @@
 
     <main class="max-w-6xl mx-auto px-4 -mt-12">
 
+        <!-- Issue Scorer -->
+        <div class="bg-white rounded-2xl border border-slate-200 card-shadow p-5 mb-6 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+            <input type="text" id="issue-input" placeholder="Enter a policy issue (e.g. rent control in Boston)"
+                class="flex-1 px-4 py-3 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                onkeydown="if(event.key==='Enter') scoreIssue()" />
+            <button id="score-btn" onclick="scoreIssue()"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-3 rounded-xl text-sm transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+                Score This Issue
+            </button>
+        </div>
+        <p id="score-error" class="text-rose-600 text-sm text-center mb-4 hidden"></p>
+
         <!-- Scenarios -->
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
             <button onclick="loadScenario('climate')" class="bg-white hover:bg-indigo-50 p-3 rounded-xl border border-slate-200 text-sm font-bold transition-all shadow-sm">🌍 Climate Action</button>
@@ -94,6 +106,7 @@
                                 <span id="v-val" class="text-2xl font-black text-indigo-600">5.0</span>
                             </div>
                             <input type="range" id="visibility" min="1" max="10" step="0.1" value="5" class="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer slider-thumb">
+                            <p id="v-reason" class="text-xs text-slate-400 mt-1 hidden"></p>
                         </div>
                         <div>
                             <div class="flex justify-between items-end mb-2">
@@ -101,6 +114,7 @@
                                 <span id="s-val" class="text-2xl font-black text-indigo-600">5.0</span>
                             </div>
                             <input type="range" id="constituency" min="1" max="10" step="0.1" value="5" class="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer slider-thumb">
+                            <p id="s-reason" class="text-xs text-slate-400 mt-1 hidden"></p>
                         </div>
                         <div>
                             <div class="flex justify-between items-end mb-2">
@@ -108,6 +122,7 @@
                                 <span id="c-val" class="text-2xl font-black text-indigo-600">5.0</span>
                             </div>
                             <input type="range" id="cost" min="1" max="10" step="0.1" value="5" class="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer slider-thumb">
+                            <p id="c-reason" class="text-xs text-slate-400 mt-1 hidden"></p>
                         </div>
                     </div>
 
@@ -122,6 +137,7 @@
                                 <span id="o-val" class="text-2xl font-black text-rose-600">5.0</span>
                             </div>
                             <input type="range" id="opposition" min="1" max="10" step="0.1" value="5" class="w-full h-3 bg-rose-100 rounded-lg appearance-none cursor-pointer slider-rose">
+                            <p id="o-reason" class="text-xs text-slate-400 mt-1 hidden"></p>
                         </div>
                         <div>
                             <div class="flex justify-between items-end mb-2">
@@ -129,6 +145,7 @@
                                 <span id="f-val" class="text-2xl font-black text-rose-600">5.0</span>
                             </div>
                             <input type="range" id="frames" min="1" max="10" step="0.1" value="5" class="w-full h-3 bg-rose-100 rounded-lg appearance-none cursor-pointer slider-rose">
+                            <p id="f-reason" class="text-xs text-slate-400 mt-1 hidden"></p>
                         </div>
                     </div>
 
@@ -212,6 +229,7 @@
 
     <script>
         const WORKER_URL = "https://pwse-6q3.pages.dev/api";
+        const SCORE_URL = "https://pwse-6q3.pages.dev/score";
 
         let accessCode = "";
         let currentScenario = "Custom";
@@ -281,6 +299,64 @@
         }
 
         inputs.forEach(id => { els[id].addEventListener('input', update); });
+
+        async function scoreIssue() {
+            const issue = document.getElementById('issue-input').value.trim();
+            if (!issue) return;
+
+            const btn = document.getElementById('score-btn');
+            const errEl = document.getElementById('score-error');
+            errEl.classList.add('hidden');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>&nbsp; Scoring...';
+
+            try {
+                const res = await fetch(SCORE_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ passphrase: accessCode, issue }),
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    if (res.status === 401) {
+                        document.getElementById('gate').classList.remove('hidden');
+                        document.getElementById('gate-error').classList.remove('hidden');
+                    } else {
+                        errEl.innerText = data.error || "Scoring failed. Try again.";
+                        errEl.classList.remove('hidden');
+                    }
+                    return;
+                }
+
+                const map = {
+                    visibility: { slider: 'visibility', reason: 'v-reason' },
+                    constituency: { slider: 'constituency', reason: 's-reason' },
+                    cost: { slider: 'cost', reason: 'c-reason' },
+                    opposition: { slider: 'opposition', reason: 'o-reason' },
+                    frames: { slider: 'frames', reason: 'f-reason' },
+                };
+
+                for (const [key, ids] of Object.entries(map)) {
+                    const entry = data[key];
+                    if (!entry) continue;
+                    const score = Math.min(10, Math.max(1, Number(entry.score)));
+                    document.getElementById(ids.slider).value = score;
+                    const reasonEl = document.getElementById(ids.reason);
+                    reasonEl.innerText = entry.reason || "";
+                    reasonEl.classList.toggle('hidden', !entry.reason);
+                }
+                currentScenario = "Custom";
+                update();
+                document.getElementById('analysis-panel').classList.add('hidden');
+            } catch (err) {
+                errEl.innerText = "Could not reach the scoring server. Check your connection.";
+                errEl.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "Score This Issue";
+            }
+        }
 
         async function analyze() {
             const btn = document.getElementById('analyze-btn');
