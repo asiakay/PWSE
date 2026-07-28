@@ -102,6 +102,14 @@ Respond ONLY with the JSON object. No preamble, no markdown, no explanation outs
   return jsonResponse({ score: score.toFixed(2), analysis });
 }
 
+async function handleValidate(body, env) {
+  const { passphrase } = body;
+  if (!passphrase || passphrase !== env.ACCESS_CODE) {
+    return jsonResponse({ error: "Invalid access code." }, 401);
+  }
+  return jsonResponse({ ok: true });
+}
+
 async function handleScore(body, env) {
   const { passphrase, issue } = body;
 
@@ -177,7 +185,9 @@ export default {
     }
 
     try {
-      if (pathname === "/analyze") {
+      if (pathname === "/validate") {
+        return await handleValidate(body, env);
+      } else if (pathname === "/analyze") {
         return await handleAnalyze(body, env);
       } else if (pathname === "/score") {
         return await handleScore(body, env);
